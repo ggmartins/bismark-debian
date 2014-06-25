@@ -15,7 +15,7 @@ bismark-netcat-gnu (0.7.1-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
- -- Guilherme Grillo Martins <gmartins@guilherme.noise.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
+ -- Guilherme Grillo Martins <gmartins@cc.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
 EOF
 
 echo "9" > $TARGETDIR/debian/compat
