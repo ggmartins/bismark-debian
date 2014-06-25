@@ -31,6 +31,8 @@ Build-Depends: debhelper (>= 9)
 Package: bismark-netcat-gnu
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: netcat-traditional
+Conflicts: netcat-traditional
 Description: BISmark NetCat GNU
  BISMArk Broadband Internet Services beanchMARK
 
