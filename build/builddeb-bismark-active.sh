@@ -29,7 +29,7 @@ bismark-active (BISMARKVERSION-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
- -- Guilherme Grillo Martins <gmartins@guilherme.noise.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
+ -- Guilherme Grillo Martins <gmartins@cc.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
 EOF
 
 sed -i "s/BISMARKVERSION/$VER/g" $TARGETDIR/debian/changelog

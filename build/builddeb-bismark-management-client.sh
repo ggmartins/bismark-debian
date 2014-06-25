@@ -5,7 +5,6 @@ TARGETDIR=bismark-management-client-1.0
 
 rm -rf bismark-management-client
 rm -rf $TARGETDIR
-rm -rf bismark-packages
 git clone https://github.com/projectbismark/bismark-management-client.git
 
 mv bismark-management-client $TARGETDIR
@@ -22,14 +21,14 @@ bismark-management-client (1.0-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
- -- Guilherme Grillo Martins <gmartins at cc gatech edu>  Wed, 11 Jun 2014 18:01:56 +0000
+ -- Guilherme Grillo Martins <gmartins@cc.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
 EOF
 
 echo "9" > $TARGETDIR/debian/compat
 
 cat << "EOF" | tee $TARGETDIR/debian/control > /dev/null
 Source: bismark-management-client
-Maintainer: Guilherme G. Martins <gmartins at cc gatech edu>
+Maintainer: Guilherme G. Martins <gmartins@cc.gatech.edu>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.4
