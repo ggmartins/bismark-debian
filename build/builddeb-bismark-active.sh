@@ -6,7 +6,6 @@ TARGETDIR=bismark-active-$VER
 
 rm -rf bismark-active
 rm -rf $TARGETDIR
-rm -rf bismark-packages
 git clone https://github.com/projectbismark/bismark-active.git
 
 
@@ -56,7 +55,7 @@ cat << "EOF" | tee $TARGETDIR/debian/postinst > /dev/null
 #!/bin/bash
 
 if [ -x /usr/bin/bismark-measure-wrapper ]; then
-	echo "* * * * * root /usr/bin/bismark-measure-wrapper >>/tmp/bismark/scripts.log 2>&1" >/etc/cron.d/cron-bismark-active
+	echo "* * * * * root /usr/bin/bismark-measure-wrapper >>/tmp/bismark-scripts.log 2>&1" >/etc/cron.d/cron-bismark-active
 	chmod +x /etc/cron.d/cron-bismark-active
 fi
 

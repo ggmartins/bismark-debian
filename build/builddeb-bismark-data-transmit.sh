@@ -62,11 +62,9 @@ cat << "EOF" | tee $TARGETDIR/debian/postinst > /dev/null
 #!/bin/bash
 
 if [ -x /etc/init.d/bismark-data-transmit ]; then
+  /etc/init.d/bismark-data-transmit start
   update-rc.d -f bismark-data-transmit defaults
-fi
-#  /etc/init.d/bismark-data-transmit start
-#  ln -s /etc/init.d/bismark-data-transmit /etc/rc6.d/K01bismark-data-transmit
-#  echo "@reboot root /etc/init.d/bismark-data-transmit start >> /tmp/bismark-scripts.log 2>&1" >/etc/cron.d/cron-bismark-data-transmit
+fi 
 
 EOF
 chmod +x $TARGETDIR/debian/postinst

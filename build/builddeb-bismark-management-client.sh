@@ -36,7 +36,7 @@ Build-Depends: debhelper (>= 9)
 
 Package: bismark-management-client
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, curl, dropbear
+Depends: ${shlibs:Depends}, ${misc:Depends}, curl
 Description: BISMark Management Client scripts
  BISMArk Broadband Internet Services beanchMARK
 
@@ -58,10 +58,6 @@ fi
 EOF
 
 
-#  echo "*/5  * * * * root /usr/bin/bismark-rshell >> /tmp/bismark/scripts-mgmt.log 2>&1" >/etc/cron.d/cron-bismark-mgmt
-#  echo "*/5  * * * * root /usr/bin/bismark-sshd >> /tmp/bismark/scripts-mgmt.log 2>&1" >/etc/cron.d/cron-bismark-mgmt
-
-
 touch $TARGETDIR/debian/copyright
 echo "1.0 lancre" > $TARGETDIR/debian/source/format
 
@@ -77,7 +73,6 @@ override_dh_auto_install:
 	mkdir -p $$(pwd)/debian/bismark-management-client/usr/lib/bismark
 	mkdir -p $$(pwd)/debian/bismark-management-client/etc/ssl/certs/
 	cp $$(pwd)/usr/bin/* $$(pwd)/debian/bismark-management-client/usr/bin/
-	rm -f $$(pwd)/debian/bismark-management-client/usr/bin/bismark-sshd
 	cp $$(pwd)/usr/lib/bismark/functions.inc.sh $$(pwd)/debian/bismark-management-client/usr/lib/bismark/
 	cp $$(pwd)/etc/bismark/* $$(pwd)/debian/bismark-management-client/etc/bismark
 	cp $$(pwd)/etc/ssl/certs/* $$(pwd)/debian/bismark-management-client/etc/ssl/certs/
