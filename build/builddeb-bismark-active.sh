@@ -8,17 +8,15 @@ rm -rf bismark-active
 rm -rf $TARGETDIR
 git clone https://github.com/projectbismark/bismark-active.git
 
-
-mv bismark-active $TARGETDIR
-cd $TARGETDIR
-cp ../gitpatches.tgz .
-tar xvzf gitpatches.tgz
-rm gitpatches.tgz
-for i in `ls  scripts_*`; do patch -p0 $(echo `echo $i |sed 's/\_/\//g'` | sed 's/\.patch//g') < $i ;done
-rm -f *.patch
-#git checkout debian
-cd -
-
+if [ $1 = "nodownload" ];
+ then
+    echo "Not checking out/downloading latest code, using existing dir $TARGETDIR..."
+ else
+    mv bismark-active $TARGETDIR
+    cd $TARGETDIR
+    git checkout debian
+    cd -
+fi
 
 tar cvzf bismark-active_$VER.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
@@ -54,12 +52,32 @@ EOF
 cat << "EOF" | tee $TARGETDIR/debian/postinst > /dev/null
 #!/bin/bash
 
-if [ -x /usr/bin/bismark-measure-wrapper ]; then
-	echo "* * * * * root /usr/bin/bismark-measure-wrapper >>/tmp/bismark-scripts.log 2>&1" >/etc/cron.d/cron-bismark-active
-	chmod +x /etc/cron.d/cron-bismark-active
+if [ -f /etc/init.d/bismark-active ]; then
+	chmod +x /etc/init.d/bismark-active
+	/etc/init.d/bismark-active start
+	update-rc.d -f bismark-active defaults
 fi
 
 EOF
+
+
+cat << "EOF" | tee $TARGETDIR/debian/postrm > /dev/null
+#!/bin/bash
+
+if [ -x /etc/init.d/bismark-active ]; then
+  update-rc.d -f bismark-active remove
+fi
+rm -f /etc/cron.d/cron-bismark-active
+
+EOF
+chmod +x $TARGETDIR/debian/postrm
+
+
+#if [ -x /usr/bin/bismark-measure-wrapper ]; then
+#	echo "* * * * * root /usr/bin/bismark-measure-wrapper >>/tmp/bismark-scripts.log 2>&1" >/etc/cron.d/cron-bismark-active
+#	chmod +x /etc/cron.d/cron-bismark-active
+#fi
+
 
 touch $TARGETDIR/debian/copyright
 echo "$VER lancre" > $TARGETDIR/debian/source/format
@@ -71,10 +89,12 @@ export DH_VERBOSE=1
 	dh $@
 
 override_dh_auto_install:
+	mkdir -p $$(pwd)/debian/bismark-active/etc/init.d/
 	mkdir -p $$(pwd)/debian/bismark-active/etc/bismark/
 	mkdir -p $$(pwd)/debian/bismark-active/usr/bin/
 	cp $$(pwd)/scripts/bismark-* $$(pwd)/debian/bismark-active/usr/bin/
 	cp $$(pwd)/etc/bismark-active.conf $$(pwd)/debian/bismark-active/etc/bismark
+	cp $$(pwd)/etc/init.d/bismark-active $$(pwd)/debian/bismark-active/etc/init.d/bismark-active
 EOF
 
 chmod +x $TARGETDIR/debian/rules

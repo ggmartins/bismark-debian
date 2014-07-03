@@ -3,15 +3,19 @@
 export DEB_BUILD_OPTIONS=nostrip
 TARGETDIR=bismark-management-client-1.0
 
-rm -rf bismark-management-client
-rm -rf $TARGETDIR
-git clone https://github.com/projectbismark/bismark-management-client.git
+if [ $1 = "nodownload" ];
+ then
+    echo "Not checking out/downloading latest code, using existing dir $TARGETDIR..."
+ else
+    rm -rf bismark-management-client
+    rm -rf $TARGETDIR
+    git clone https://github.com/projectbismark/bismark-management-client.git
 
-mv bismark-management-client $TARGETDIR
-cd $TARGETDIR
-git checkout debian
-cd -
-
+    mv bismark-management-client $TARGETDIR
+    cd $TARGETDIR
+    git checkout debian
+    cd -
+fi
 
 tar cvzf bismark-management-client_1.0.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
