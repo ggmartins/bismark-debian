@@ -1,5 +1,8 @@
 #!/bin/bash
 
+if [ ! -f netcat-0.7.1.tar.gz ]; then
+  wget -c http://sourceforge.net/projects/netcat/files/netcat/0.7.1/netcat-0.7.1.tar.gz
+fi
 
 #export DEB_BUILD_OPTIONS=nostrip
 TARGETDIR=netcat-0.7.1

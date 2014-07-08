@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ ! -f dropbear-2011.54.tar.gz ]; then
+  wget -c https://matt.ucc.asn.au/dropbear/releases/dropbear-2011.54.tar.gz
+fi
+
 #export DEB_BUILD_OPTIONS=nostrip
 TARGETDIR=dropbear-2011.54
 
