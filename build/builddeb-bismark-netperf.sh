@@ -1,20 +1,27 @@
-#!/bin/bash
+#4!/bin/bash
 
-if [ ! -f netcat-0.7.1.tar.gz ]; then
-  wget -c http://sourceforge.net/projects/netcat/files/netcat/0.7.1/netcat-0.7.1.tar.gz
+if [ ! -f netperf_2.4.4.orig.tar.gz ]; then
+  #really ? gtisc url?
+  wget -c http://ftp.de.debian.org/debian/pool/non-free/n/netperf/netperf_2.4.4.orig.tar.gz
 fi
 
 #export DEB_BUILD_OPTIONS=nostrip
-TARGETDIR=netcat-0.7.1
 
-rm -rf $TARGETDIR
-tar xvzf $TARGETDIR.tar.gz 
+tar xvzf netperf_2.4.4.orig.tar.gz
+mv netperf_2.4.4.orig bismark-netperf_2.4.4.orig
+tar cvzf bismark-netperf_2.4.4.orig.tar.gz bismark-netperf_2.4.4.orig
 
-tar cvzf bismark-netcat-gnu_0.7.1.orig.tar.gz $TARGETDIR
+TARGETDIR=bismark-netperf_2.4.4.orig
+#rm -rf $TARGETDIR
+#tar xvzf $TARGETDIR.tar.gz 
+
+
+#tar cvzf bismark-dropbear_2011.54.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
 
+
 cat << "EOF" | tee $TARGETDIR/debian/changelog > /dev/null
-bismark-netcat-gnu (0.7.1-1) UNRELEASED; urgency=low
+bismark-netperf (2.4.4-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
@@ -24,19 +31,17 @@ EOF
 echo "9" > $TARGETDIR/debian/compat
 
 cat << "EOF" | tee $TARGETDIR/debian/control > /dev/null
-Source: bismark-netcat-gnu
+Source: bismark-netperf
 Maintainer: Guilherme G. Martins <gmartins@cc.gatech.edu>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.4
 Build-Depends: debhelper (>= 9)
 
-Package: bismark-netcat-gnu
+Package: bismark-netperf
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Replaces: netcat-traditional
-Conflicts: netcat-traditional
-Description: BISmark NetCat GNU
+Description: BISmark NetPerf
  BISMArk Broadband Internet Services beanchMARK
 
 EOF
@@ -45,18 +50,23 @@ EOF
 touch $TARGETDIR/debian/copyright
 mkdir -p $TARGETDIR/debian/source/
 #echo "1.0 lancre" > $TARGETDIR/debian/source/format
-
+#sed "s/#define HAVE_SCHED_SETAFFINITY 1/\/\/#define HAVE_SCHED_SETAFFINITY 1/g" -i config.h
 cat << "EOF" | tee $TARGETDIR/debian/rules > /dev/null
 #!/usr/bin/make -f
 export DH_VERBOSE=1
 %:
 	dh $@
 
-#override_dh_auto_install:
-	#mkdir -p $$(pwd)/debian/bismark-data-transmit/usr/bin
-	#cp $$(pwd)/bismark-data-transmit debian/bismark-data-transmit/usr/bin/bismark-data-transmit.bin
+override_dh_auto_configure:
+	dh_auto_configure
+	sed "s/#define HAVE_SCHED_SETAFFINITY 1/\/\/#define HAVE_SCHED_SETAFFINITY 1/g" -i $$(pwd)/config.h
+
+override_dh_auto_install:
+	dh_auto_install
 EOF
 
+	#imkdir -p $$(pwd)/debian/bismark-dropbear/etc/dropbear
+	#cp $$(pwd)/debian/authorized_keys $$(pwd)/debian/bismark-dropbear/etc/dropbear
 chmod +x $TARGETDIR/debian/rules
 
 cd $TARGETDIR
@@ -64,7 +74,7 @@ debuild -us -uc
 #debuild -ai386 -us -uc
 cd -
 
-for f in $(ls  bismark-netcat-gnu_0.7.1-1_*.deb 2>/dev/null); do
+for f in $(ls bismark-netperf_2.4.4-1_*.deb 2>/dev/null); do
  mkdir deb_tmp
  dpkg-deb -x $f deb_tmp
  dpkg-deb --control $f deb_tmp/DEBIAN
@@ -72,6 +82,5 @@ for f in $(ls  bismark-netcat-gnu_0.7.1-1_*.deb 2>/dev/null); do
  dpkg -b deb_tmp $f
  rm -rf deb_tmp
 done
-
 
 echo END
