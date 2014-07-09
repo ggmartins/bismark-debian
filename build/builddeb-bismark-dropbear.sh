@@ -10,7 +10,7 @@ TARGETDIR=dropbear-2011.54
 rm -rf $TARGETDIR
 tar xvzf $TARGETDIR.tar.gz 
 
-tar xvzf bismark-dropbear.patches.tgz
+#tar xvzf bismark-dropbear.patches.tgz
 
 cd $TARGETDIR
 for i in `ls ../bismark-dropbear.patches`; do
