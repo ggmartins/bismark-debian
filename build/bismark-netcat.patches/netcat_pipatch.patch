@@ -1,0 +1,11 @@
+--- a/netcat-0.7.1/src/netcat.c	2003-08-28 17:20:25.000000000 +0000
++++ b/netcat-0.7.1/src/netcat.c	2014-07-10 18:34:21.953283813 +0000
+@@ -542,7 +542,7 @@
+ 	    _("No ports specified for connection"));
+ 
+   c = 0;			/* must be set to 0 for netcat_flag_next() */
+-  left_ports = total_ports;
++  left_ports = 10;
+   while (left_ports > 0) {
+     /* `c' is the port number independently of the sorting method (linear
+        or random).  While in linear mode it is also used to fetch the next

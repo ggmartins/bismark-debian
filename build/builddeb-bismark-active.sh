@@ -43,7 +43,7 @@ Build-Depends: debhelper (>= 9)
 
 Package: bismark-active
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, netperf, paris-traceroute, d-itg, dnsutils
+Depends: ${shlibs:Depends}, ${misc:Depends}, paris-traceroute, d-itg, dnsutils
 Description: BISMark Active Measurements Scripts
  BISMArk Broadband Internet Services beanchMARK
 
@@ -101,7 +101,7 @@ chmod +x $TARGETDIR/debian/rules
 
 cd $TARGETDIR
 debuild -us -uc
-debuild -ai386 -us -uc
+#debuild -ai386 -us -uc
 cd -
 
 echo END
