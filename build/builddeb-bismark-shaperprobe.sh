@@ -4,7 +4,7 @@ if [ ! -d bismark-packages ]; then
   git clone https://github.com/projectbismark/bismark-packages.git
 fi
 
-TARGETDIR=shapeprobe-2009.10
+TARGETDIR=shaperprobe-2009.10
 #export DEB_BUILD_OPTIONS=nostrip
 rm -rf $TARGETDIR
 cp bismark-packages/net/shaperprobe/src/ $TARGETDIR -r
@@ -13,7 +13,7 @@ tar cvzf $TARGETDIR.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
 
 cat << "EOF" | tee $TARGETDIR/debian/changelog > /dev/null
-bismark-shapeprobe (2009.10) UNRELEASED; urgency=low
+bismark-shaperprobe (2009.10) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
@@ -23,19 +23,19 @@ EOF
 echo "9" > $TARGETDIR/debian/compat
 
 cat << "EOF" | tee $TARGETDIR/debian/control > /dev/null
-Source: bismark-shapeprobe
+Source: bismark-shaperprobe
 Maintainer: Guilherme G. Martins <gmartins@cc.gatech.edu>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.4
 Build-Depends: debhelper (>= 9)
 
-Package: bismark-shapeprobe
+Package: bismark-shaperprobe
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Replaces: netcat-traditional
 Conflicts: netcat-traditional
-Description: BISMark ShapeProbe
+Description: BISMark shaperProbe
  BISMArk Broadband Internet Services beanchMARK
 
 EOF
@@ -52,8 +52,8 @@ export DH_VERBOSE=1
 	dh $@
 
 override_dh_auto_install:
-	mkdir -p $$(pwd)/debian/bismark-shapeprobe/usr/bin
-	cp $$(pwd)/prober debian/bismark-shapeprobe/usr/bin/prober
+	mkdir -p $$(pwd)/debian/bismark-shaperprobe/usr/bin
+	cp $$(pwd)/prober debian/bismark-shaperprobe/usr/bin/prober
 EOF
 
 chmod +x $TARGETDIR/debian/rules
