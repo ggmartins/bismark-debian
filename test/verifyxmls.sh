@@ -1,7 +1,6 @@
 #!/bin/sh
 
-URL=http://uploads.projectbismark.net/DLB827EB181362/20140718/
-URL=http://uploads.projectbismark.net/OW4C60DEE6C732/20140722/
+URL=http://uploads.projectbismark.net/PIB827EB181362/20140820/
 wget $URL
 
 cat index.html | grep -o "active.*gz\"" | sed "s/gz\"/gz/g" > tgzlist

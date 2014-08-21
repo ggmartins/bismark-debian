@@ -20,6 +20,7 @@ fi
 
 tar cvzf bismark-active_$VER.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
+mkdir -p $TARGETDIR/debian/source
 
 cat << "EOF" | tee $TARGETDIR/debian/changelog > /dev/null
 bismark-active (BISMARKVERSION-1) UNRELEASED; urgency=low
@@ -51,24 +52,24 @@ EOF
 
 cat << "EOF" | tee $TARGETDIR/debian/postinst > /dev/null
 #!/bin/bash
-
+set -e
 if [ -f /etc/init.d/bismark-active ]; then
 	chmod +x /etc/init.d/bismark-active
 	/etc/init.d/bismark-active start
 	update-rc.d -f bismark-active defaults
 fi
-
+#DEBHELPER#
 EOF
 
 
 cat << "EOF" | tee $TARGETDIR/debian/postrm > /dev/null
 #!/bin/bash
-
+set -e
 if [ -x /etc/init.d/bismark-active ]; then
   update-rc.d -f bismark-active remove
 fi
 rm -f /etc/cron.d/cron-bismark-active
-
+#DEBHELPER#
 EOF
 chmod +x $TARGETDIR/debian/postrm
 
@@ -80,7 +81,7 @@ chmod +x $TARGETDIR/debian/postrm
 
 
 touch $TARGETDIR/debian/copyright
-echo "$VER lancre" > $TARGETDIR/debian/source/format
+#echo "$VER lancre" > $TARGETDIR/debian/source/format
 
 cat << "EOF" | tee $TARGETDIR/debian/rules > /dev/null
 #!/usr/bin/make -f

@@ -60,23 +60,23 @@ EOF
 
 cat << "EOF" | tee $TARGETDIR/debian/postinst > /dev/null
 #!/bin/bash
-
+set -e
 if [ -x /etc/init.d/bismark-data-transmit ]; then
   /etc/init.d/bismark-data-transmit start
   update-rc.d -f bismark-data-transmit defaults
 fi 
-
+#DEBHELPER#
 EOF
 chmod +x $TARGETDIR/debian/postinst
 
 
 cat << "EOF" | tee $TARGETDIR/debian/postrm > /dev/null
 #!/bin/bash
-
+set -e
 if [ -x /etc/init.d/bismark-data-transmit ]; then
   update-rc.d -f bismark-data-transmit remove
 fi
-
+#DEBHELPER#
 EOF
 chmod +x $TARGETDIR/debian/postrm
 

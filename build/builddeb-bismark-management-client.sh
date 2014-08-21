@@ -3,7 +3,7 @@
 export DEB_BUILD_OPTIONS=nostrip
 TARGETDIR=bismark-management-client-1.0
 
-if [ $1 = "nodownload" ];
+if [ "$1" = "nodownload" ];
  then
     echo "Not checking out/downloading latest code, using existing dir $TARGETDIR..."
  else
@@ -48,7 +48,7 @@ EOF
 
 cat << "EOF" | tee $TARGETDIR/debian/postinst > /dev/null
 #!/bin/bash
-
+set -e
 if [ -x /usr/bin/bismark-bootstrap ]; then
   bismark-bootstrap
   echo "@reboot root /usr/bin/bismark-bootstrap >> /tmp/bismark-scripts-mgmt.log 2>&1" >/etc/cron.d/cron-bismark-bootstrap
@@ -58,12 +58,12 @@ if [ -x /usr/bin/bismark-bootstrap ]; then
   echo "5 */12 * * * root /usr/bin/bismark-action mgmtconfupdate >> /tmp/bismark-scripts-mgmt.log 2>&1" >>/etc/cron.d/cron-bismark-mgmt
   chmod +x /etc/cron.d/cron-bismark-mgmt
 fi
-
+#DEBHELPER#
 EOF
 
 
 touch $TARGETDIR/debian/copyright
-echo "1.0 lancre" > $TARGETDIR/debian/source/format
+#echo "1.0 lancre" > $TARGETDIR/debian/source/format
 
 cat << "EOF" | tee $TARGETDIR/debian/rules > /dev/null
 #!/usr/bin/make -f
