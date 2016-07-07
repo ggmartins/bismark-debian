@@ -17,14 +17,14 @@ bismark-shaperprobe (2009.10) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
- -- Guilherme Grillo Martins <gmartins@cc.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
+ -- Guilherme Grillo Martins <gmartins@gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
 EOF
 
 echo "9" > $TARGETDIR/debian/compat
 
 cat << "EOF" | tee $TARGETDIR/debian/control > /dev/null
 Source: bismark-shaperprobe
-Maintainer: Guilherme G. Martins <gmartins@cc.gatech.edu>
+Maintainer: Guilherme G. Martins <gmartins@gatech.edu>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.4

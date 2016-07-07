@@ -1,0 +1,48 @@
+reverted:
+--- bismark-netperf_2.4.4.orig/src/netlib.c	2016-07-07 18:34:47.023681081 +0000
++++ bismark-netperf_2.4.4.orig/src/netlib.c	2016-07-07 18:37:13.170406746 +0000
+@@ -1253,7 +1253,7 @@
+     /* get the ring element */
+     temp_link = (struct ring_elt *)malloc(sizeof(struct ring_elt));
+     if (temp_link == NULL) {
++      printf("malloc(%zu) failed!\n", sizeof(struct ring_elt));
+-      printf("malloc(%u) failed!\n", sizeof(struct ring_elt));
+       exit(1);
+     }
+     /* remember the first one so we can close the ring at the end */
+@@ -1627,7 +1627,7 @@
+     temp_link = (struct sendfile_ring_elt *)
+       malloc(sizeof(struct sendfile_ring_elt));
+     if (temp_link == NULL) {
++      printf("malloc(%zu) failed!\n", sizeof(struct sendfile_ring_elt));
+-      printf("malloc(%u) failed!\n", sizeof(struct sendfile_ring_elt));
+       exit(1);
+ 	}
+ 
+@@ -2144,7 +2144,7 @@
+     dump_request();
+ 
+     fprintf(where,
++            "\nsend_request: about to send %zu bytes from %p\n",
+-            "\nsend_request: about to send %u bytes from %p\n",
+             sizeof(netperf_request),
+             &netperf_request);
+     fflush(where);
+@@ -2183,7 +2183,7 @@
+ 
+   if (debug > 1) {
+     fprintf(where,
++            "send_response: contents of %zu ints before htonl\n",
+-            "send_response: contents of %u ints before htonl\n",
+             sizeof(netperf_response)/4);
+     dump_response();
+   }
+@@ -2203,7 +2203,7 @@
+             "send_response: contents after htonl\n");
+     dump_response();
+     fprintf(where,
++            "about to send %zu bytes from %p\n",
+-            "about to send %u bytes from %p\n",
+             sizeof(netperf_response),
+             &netperf_response);
+     fflush(where);

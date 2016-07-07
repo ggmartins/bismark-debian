@@ -1,10 +1,5 @@
 #!/bin/bash
 
-apt-get install git
-apt-get install devscripts
-apt-get install libcurl4-gnutls-dev
-apt-get install libssl-dev
-
 #export DEB_BUILD_OPTIONS=nostrip
 TARGETDIR=bismark-data-transmit-1.0
 
@@ -37,14 +32,14 @@ bismark-data-transmit (1.0-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
- -- Guilherme Grillo Martins <gmartins@cc.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
+ -- Guilherme Grillo Martins <gmartins@gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
 EOF
 
 echo "9" > $TARGETDIR/debian/compat
 
 cat << "EOF" | tee $TARGETDIR/debian/control > /dev/null
 Source: bismark-data-transmit
-Maintainer: Guilherme G. Martins <gmartins@cc.gatech.edu>
+Maintainer: Guilherme G. Martins <gmartins@gatech.edu>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.4

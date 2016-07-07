@@ -9,6 +9,9 @@ fi
 
 tar xvzf netperf_2.4.4.orig.tar.gz
 mv netperf_2.4.4.orig bismark-netperf_2.4.4.orig
+patch -p0 bismark-netperf_2.4.4.orig/src/netlib.c < bismark-netperf.patches/netlib.patch
+patch -p0 bismark-netperf_2.4.4.orig/src/netsh.c < bismark-netperf.patches/netsh.patch
+patch -p0 bismark-netperf_2.4.4.orig/src/nettest_bsd.c < bismark-netperf.patches/nettest_bsd.patch
 tar cvzf bismark-netperf_2.4.4.orig.tar.gz bismark-netperf_2.4.4.orig
 
 TARGETDIR=bismark-netperf_2.4.4.orig
@@ -25,14 +28,14 @@ bismark-netperf (2.4.4-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)
 
- -- Guilherme Grillo Martins <gmartins@cc.gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
+ -- Guilherme Grillo Martins <gmartins@gatech.edu>  Wed, 11 Jun 2014 18:01:56 +0000
 EOF
 
 echo "9" > $TARGETDIR/debian/compat
 
 cat << "EOF" | tee $TARGETDIR/debian/control > /dev/null
 Source: bismark-netperf
-Maintainer: Guilherme G. Martins <gmartins@cc.gatech.edu>
+Maintainer: Guilherme G. Martins <gmartins@gatech.edu>
 Section: misc
 Priority: optional
 Standards-Version: 3.9.4
