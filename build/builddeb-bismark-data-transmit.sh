@@ -12,6 +12,7 @@ git clone https://github.com/projectbismark/bismark-data-transmit.git
 
 cd bismark-packages
 git checkout debian
+sed -i "14i DATA_TRANSMIT_ARGUMENTS=http://projectbismark.net:8443/upload" utils/bismark-data-transmit/files/etc/init.d/bismark-data-transmit
 cd -
 
 cd bismark-data-transmit
