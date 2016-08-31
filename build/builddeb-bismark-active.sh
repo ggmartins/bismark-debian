@@ -4,6 +4,9 @@ VER=1.0
 export DEB_BUILD_OPTIONS=nostrip
 TARGETDIR=bismark-active-$VER
 
+#sudo apt-get install libcurl4-openssl-dev
+#sudo apt-get install libssl-dev
+
 rm -rf bismark-active
 rm -rf $TARGETDIR
 git clone https://github.com/projectbismark/bismark-active.git

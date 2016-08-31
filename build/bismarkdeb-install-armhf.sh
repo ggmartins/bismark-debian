@@ -21,25 +21,15 @@ apt-get -yqf install libcurl3-gnutls
 apt-get -yqf install isc-dhcp-server 
 apt-get -yqf install dropbear
 
-while true; do
-    read -p "Do you wish to apply the BISmark isc-dhcp-server settings?" yn
-    case $yn in
-        [Yy]* ) 
-                 if [ -f /etc/default/isc-dhcp-server ]; then
-                    echo -e "INTERFACES=\"eth1\"\n" >> /etc/default/isc-dhcp-server
-                 else
-                    echo "Warning: no default file for isc-dhcp-server" 
-                 fi
-                 if [ -f /etc/dhcp/dhcpd.conf ]; then
-                    echo "subnet 10.1.1.0 netmask 255.255.255.0 {range 10.1.1.10 10.1.1.100; option routers 10.1.1.1;}" >> /etc/dhcp/dhcpd.conf
-                 else
-                    echo "Warning: no default file for isc-dhcp-server" 
-                 fi
-              break;;
-        [Nn]* ) echo "OK";;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+#while true; do
+#    read -p "Do you wish to apply the BISmark isc-dhcp-server settings?" yn
+#    case $yn in
+#        [Yy]* ) 
+#             break;;
+#        [Nn]* ) echo "OK";;
+#        * ) echo "Please answer yes or no.";;
+#    esac
+#done
 
 dpkg -i bismark-netcat-gnu_0.7.1-1_armhf.deb
 #dpkg -i bismark-dropbear_2011.54-1_armhf.deb
@@ -60,7 +50,6 @@ cat << "EOF" | tee /etc/init.d/bismark-nat > /dev/null
 # Short-Description: bismark-nat
 # Description:       enable NAT for any traffic comming from eth0
 ### END INIT INFO
-
 IFOUT="eth0"
 touch /var/lock/bismark-nat
 case "$1" in
@@ -86,4 +75,49 @@ EOF
 
 chmod +x /etc/init.d/bismark-nat
 update-rc.d bismark-nat defaults
+
+cat << "EOF" | tee /etc/network/interfaces.d/eth1 > /dev/null
+auto eth1
+    iface eth1 inet static
+    address 10.1.2.1
+    netmask 255.255.255.0
+EOF
+
+echo "INTERFACES=\"eth1\"" > /etc/default/isc-dhcp-server
+
+cat << "EOF" | tee /etc/dhcp/dhcpd.conf > /dev/null
+dns-update-style none;
+default-lease-time 600;
+max-lease-time 7200;
+log-facility local7;
+subnet 10.1.2.0 netmask 255.255.255.0 {range 10.1.1.10 10.1.2.100; option routers 10.1.2.1;}
+include "/etc/dhcpd.name-servers.tmp";
+EOF
+
+cat << "EOF" | tee /etc/dhcpcd.enter-hook > /dev/null
+#!/bin/bash
+if [ -f /etc/resolv.conf ];then
+  ns=$(cat /etc/resolv.conf  | grep -v "^#"| grep nameserver | awk '{print $2}')
+fi
+ns2=""
+for i in $ns; 
+do 
+  ns2=$ns2$i", "
+done
+if [ -z "$ns" ];then
+  if [ -z "$new_domain_name_servers" ];then
+    my_domain_name_servers="8.8.8.8, 4.2.2.2"
+  else
+    my_domain_name_servers=$(echo $new_domain_name_servers | sed -e 's/ /, /g')
+  fi
+else
+  my_domain_name_servers="${ns2::-2}"
+fi
+echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.tmp
+/etc/init.d/isc-dhcp-server force-reload
+EOF
+
+cp /etc/dhcpcd.enter-hook /etc/dhcpcd.exit-hook
+chmod +x /etc/dhcpcd.enter-hook
+chmod +x /etc/dhcpcd.exit-hook
 
