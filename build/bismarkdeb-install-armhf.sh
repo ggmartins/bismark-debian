@@ -13,7 +13,6 @@ apt-get -yqf install time
 apt-get -yqf install fping
 apt-get -yqf install dnsutils
 apt-get -yqf install busybox
-#apt-get -yqf install netperf
 apt-get -yqf install paris-traceroute
 apt-get -yqf install d-itg
 apt-get -yqf install curl
@@ -21,18 +20,20 @@ apt-get -yqf install libcurl3-gnutls
 apt-get -yqf install isc-dhcp-server 
 apt-get -yqf install dropbear
 
-#while true; do
-#    read -p "Do you wish to apply the BISmark isc-dhcp-server settings?" yn
-#    case $yn in
-#        [Yy]* ) 
-#             break;;
-#        [Nn]* ) echo "OK";;
-#        * ) echo "Please answer yes or no.";;
-#    esac
-#done
+while true; do
+    read -p "Do you wish to apply the BISmark package configuration for isc-dhcp-server and dhcpcd ? [y/n] " yn
+    case $yn in
+        [Yy]* )
+                echo "Proceeding with installation..."
+             break;;
+        [Nn]* ) echo "OK"
+             exit 1;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 
 dpkg -i bismark-netcat-gnu_0.7.1-1_armhf.deb
-#dpkg -i bismark-dropbear_2011.54-1_armhf.deb
+dpkg -i bismark-dropbear_2011.54-1_armhf.deb
 dpkg -i bismark-management-client_1.0-1_armhf.deb
 dpkg -i bismark-data-transmit_1.0-1_armhf.deb
 dpkg -i bismark-active_1.0-1_armhf.deb
@@ -79,18 +80,18 @@ update-rc.d bismark-nat defaults
 cat << "EOF" | tee /etc/network/interfaces.d/eth1 > /dev/null
 auto eth1
     iface eth1 inet static
-    address 10.1.2.1
+    address 192.168.143.1
     netmask 255.255.255.0
 EOF
 
 echo "INTERFACES=\"eth1\"" > /etc/default/isc-dhcp-server
 
 cat << "EOF" | tee /etc/dhcp/dhcpd.conf > /dev/null
-dns-update-style none;
+ddns-update-style none;
 default-lease-time 600;
 max-lease-time 7200;
 log-facility local7;
-subnet 10.1.2.0 netmask 255.255.255.0 {range 10.1.1.10 10.1.2.100; option routers 10.1.2.1;}
+subnet 192.168.143.0 netmask 255.255.255.0 {range 192.168.143.10 192.168.143.200; option routers 192.168.143.1;}
 include "/etc/dhcpd.name-servers.tmp";
 EOF
 
