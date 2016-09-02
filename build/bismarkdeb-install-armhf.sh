@@ -9,6 +9,7 @@ apt-get update
 #wget -c http://downloads.projectbismark.net/debian/armhf/bismark-dropbear_2011.54-1_armhf.deb
 #wget -c http://downloads.projectbismark.net/debian/armhf/bismark-shaperprobe_2009.10_armhf.deb
 #wget -c http://downloads.projectbismark.net/debian/armhf/bismark-netperf_2.4.4-1_armhf.deb
+apt-get -yqf install vim
 apt-get -yqf install time
 apt-get -yqf install fping
 apt-get -yqf install dnsutils
@@ -18,19 +19,22 @@ apt-get -yqf install d-itg
 apt-get -yqf install curl
 apt-get -yqf install libcurl3-gnutls
 apt-get -yqf install isc-dhcp-server 
-apt-get -yqf install dropbear
+apt-get -yqf install iftop
+apt-get -yqf install tcpdump
+apt-get -yqf install tshark 
+#apt-get -yqf install dropbear
 
-while true; do
-    read -p "Do you wish to apply the BISmark package configuration for isc-dhcp-server and dhcpcd ? [y/n] " yn
-    case $yn in
-        [Yy]* )
-                echo "Proceeding with installation..."
-             break;;
-        [Nn]* ) echo "OK"
-             exit 1;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+#while true; do
+#    read -p "Do you wish to apply the BISmark package configuration for isc-dhcp-server and dhcpcd ? [y/n] " yn
+#    case $yn in
+#        [Yy]* )
+#                echo "Proceeding with installation..."
+#             break;;
+#        [Nn]* ) echo "OK"
+#             exit 1;;
+#        * ) echo "Please answer yes or no.";;
+#    esac
+#done
 
 dpkg -i bismark-netcat-gnu_0.7.1-1_armhf.deb
 dpkg -i bismark-dropbear_2011.54-1_armhf.deb
@@ -98,7 +102,7 @@ EOF
 cat << "EOF" | tee /etc/dhcpcd.enter-hook > /dev/null
 #!/bin/bash
 if [ -f /etc/resolv.conf ];then
-  ns=$(cat /etc/resolv.conf  | grep -v "^#"| grep nameserver | awk '{print $2}')
+  ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
 ns2=""
 for i in $ns; 
@@ -112,7 +116,7 @@ if [ -z "$ns" ];then
     my_domain_name_servers=$(echo $new_domain_name_servers | sed -e 's/ /, /g')
   fi
 else
-  my_domain_name_servers="${ns2::-2}"
+ my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
 fi
 echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.tmp
 /etc/init.d/isc-dhcp-server force-reload
@@ -122,3 +126,10 @@ cp /etc/dhcpcd.enter-hook /etc/dhcpcd.exit-hook
 chmod +x /etc/dhcpcd.enter-hook
 chmod +x /etc/dhcpcd.exit-hook
 
+systemctl disable avahi-daemon
+
+sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 192.168.143.1/" /etc/ssh/sshd_config
+sed -i "s/PermitRootLogin without-password/PermitRootLogin no/" /etc/ssh/sshd_config
+/etc/init.d/ssh restart
+
+echo "Please reboot device."
