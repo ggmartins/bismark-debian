@@ -9,6 +9,9 @@ TARGETDIR=shaperprobe-2009.10
 rm -rf $TARGETDIR
 cp bismark-packages/net/shaperprobe/src/ $TARGETDIR -r
 
+cp config.guess $TARGETDIR/
+cp config.sub $TARGETDIR/
+
 tar cvzf $TARGETDIR.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
 

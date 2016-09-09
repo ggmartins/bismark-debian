@@ -88,7 +88,7 @@ chmod +x $TARGETDIR/debian/rules
 
 cd $TARGETDIR
 debuild -us -uc
-debuild -ai386 -us -uc
+#debuild -ai386 -us -uc
 cd -
 
 echo END

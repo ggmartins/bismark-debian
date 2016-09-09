@@ -15,13 +15,11 @@ patch -p0 bismark-netperf_2.4.4.orig/src/nettest_bsd.c < bismark-netperf.patches
 tar cvzf bismark-netperf_2.4.4.orig.tar.gz bismark-netperf_2.4.4.orig
 
 TARGETDIR=bismark-netperf_2.4.4.orig
-#rm -rf $TARGETDIR
-#tar xvzf $TARGETDIR.tar.gz 
 
+cp config.guess $TARGETDIR/
+cp config.sub $TARGETDIR/
 
-#tar cvzf bismark-dropbear_2011.54.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
-
 
 cat << "EOF" | tee $TARGETDIR/debian/changelog > /dev/null
 bismark-netperf (2.4.4-1) UNRELEASED; urgency=low

@@ -12,6 +12,9 @@ tar xvzf $TARGETDIR.tar.gz
 
 patch -p0 netcat-0.7.1/src/netcat.c  < bismark-netcat.patches/netcat_pipatch.patch
 
+cp config.guess $TARGETDIR/
+cp config.sub $TARGETDIR/ 
+
 tar cvzf bismark-netcat-gnu_0.7.1.orig.tar.gz $TARGETDIR
 mkdir -p $TARGETDIR/debian
 
