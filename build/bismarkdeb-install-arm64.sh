@@ -2,13 +2,13 @@
 
 apt-get update
 
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-active_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-data-transmit_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-management-client_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-netcat-gnu_0.7.1-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-dropbear_2011.54-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-shaperprobe_2009.10_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-netperf_2.4.4-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/arm64/bismark-active_1.0-1_arm64.deb
+#wget -c http://downloads.projectbismark.net/debian/arm64/bismark-data-transmit_1.0-1_arm64.deb
+#wget -c http://downloads.projectbismark.net/debian/arm64/bismark-management-client_1.0-1_arm64.deb
+#wget -c http://downloads.projectbismark.net/debian/arm64/bismark-netcat-gnu_0.7.1-1_arm64.deb
+#wget -c http://downloads.projectbismark.net/debian/arm64/bismark-dropbear_2011.54-1_arm64.deb
+#wget -c http://downloads.projectbismark.net/debian/arm64/bismark-shaperprobe_2009.10_arm64.deb
+#wget -c http://downloads.projectbismark.net/debian/arm64/bismark-netperf_2.4.4-1_arm64.deb
 apt-get -yqf install vim
 apt-get -yqf install time
 apt-get -yqf install fping
@@ -36,13 +36,16 @@ apt-get -yqf install tshark
 #    esac
 #done
 
-dpkg -i bismark-netcat-gnu_0.7.1-1_armhf.deb
-dpkg -i bismark-dropbear_2011.54-1_armhf.deb
-dpkg -i bismark-management-client_1.0-1_armhf.deb
-dpkg -i bismark-data-transmit_1.0-1_armhf.deb
-dpkg -i bismark-active_1.0-1_armhf.deb
-dpkg -i bismark-netperf_2.4.4-1_armhf.deb
-dpkg -i bismark-shaperprobe_2009.10_armhf.deb
+#trick script to think this is a rpi 
+sed -i "s/^Debian/Raspbian/" /etc/issue
+
+dpkg -i bismark-netcat-gnu_0.7.1-1_arm64.deb
+dpkg -i bismark-dropbear_2011.54-1_arm64.deb
+dpkg -i bismark-management-client_1.0-1_arm64.deb
+dpkg -i bismark-data-transmit_1.0-1_arm64.deb
+dpkg -i bismark-active_1.0-1_arm64.deb
+dpkg -i bismark-netperf_2.4.4-1_arm64.deb
+dpkg -i bismark-shaperprobe_2009.10_arm64.deb
 
 cat << "EOF" | tee /etc/init.d/bismark-nat > /dev/null
 #!/bin/sh
@@ -63,6 +66,10 @@ case "$1" in
     modprobe iptable_nat
     iptables -t nat -A POSTROUTING -o $IFOUT -j MASQUERADE
     echo 1 > /proc/sys/net/ipv4/ip_forward
+    echo "option domain-name-servers 8.8.8.8, 4.2.2.2;" > /etc/dhcpd.name-servers.tmp 
+    /etc/init.d/isc-dhcp-server stop
+    sleep 1
+    /etc/init.d/isc-dhcp-server start
     echo "Done."
     ;;
   stop)
@@ -100,15 +107,10 @@ auto eth1
     address 192.168.143.1
     netmask 255.255.255.0
     network 192.168.143.0
-
-auto eth2
-    iface eth2 inet static
-    address 192.168.143.2
-    netmask 255.255.255.0
-    network 192.168.143.0
 EOF
 
-echo "INTERFACES=\"eth1 eth2\"" > /etc/default/isc-dhcp-server
+#echo "INTERFACES=\"eth1 eth2\"" > /etc/default/isc-dhcp-server
+echo "INTERFACES=\"eth1\"" > /etc/default/isc-dhcp-server
 
 cat << "EOF" | tee /etc/dhcp/dhcpd.conf > /dev/null
 ddns-update-style none;
@@ -119,7 +121,7 @@ subnet 192.168.143.0 netmask 255.255.255.0 {range 192.168.143.10 192.168.143.200
 include "/etc/dhcpd.name-servers.tmp";
 EOF
 
-cat << "EOF" | tee /etc/dhcpcd.enter-hook > /dev/null
+cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
 #!/bin/bash
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
@@ -138,13 +140,22 @@ if [ -z "$ns" ];then
 else
  my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
 fi
-echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.tmp
-/etc/init.d/isc-dhcp-server force-reload
-EOF
+echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.new
 
-cp /etc/dhcpcd.enter-hook /etc/dhcpcd.exit-hook
-chmod +x /etc/dhcpcd.enter-hook
-chmod +x /etc/dhcpcd.exit-hook
+if [ -f /etc/dhcpd.name-servers.tmp ];then
+  diff /etc/dhcpd.name-servers.tmp /etc/dhcpd.name-servers.new > /dev/null 2>&1
+  if [ $? -eq 0 ];then
+    exit 0
+  fi
+fi  
+cp /etc/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
+/etc/init.d/isc-dhcp-server stop
+/etc/init.d/isc-dhcp-server start
+EOF
+chmod +x /usr/bin/bismark-setdns
+echo "* * * * * root /usr/bin/bismark-setdns" > /etc/cron.d/cron-bismark-setdns
+chmod +x /etc/cron.d/cron-bismark-setdns
+/etc/init.d/cron reload
 
 systemctl disable avahi-daemon
 

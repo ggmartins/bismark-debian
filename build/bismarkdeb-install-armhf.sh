@@ -63,6 +63,10 @@ case "$1" in
     modprobe iptable_nat
     iptables -t nat -A POSTROUTING -o $IFOUT -j MASQUERADE
     echo 1 > /proc/sys/net/ipv4/ip_forward
+    echo "option domain-name-servers 8.8.8.8, 4.2.2.2;" > /etc/dhcpd.name-servers.tmp
+    /etc/init.d/isc-dhcp-server stop
+    sleep 1
+    /etc/init.d/isc-dhcp-server start
     echo "Done."
     ;;
   stop)
@@ -81,34 +85,14 @@ EOF
 chmod +x /etc/init.d/bismark-nat
 update-rc.d bismark-nat defaults
 
-if [ -f /etc/network/interfaces ];then
-  if grep -q "source-directory /etc/network/interfaces.d" /etc/network/interfaces 2>%1 /dev/null; then
-    echo "source-directory present at /etc/network/interfaces. "
-  else
-    echo "source-directory not present at /etc/network/interfaces, creating..."
-    echo "source-directory /etc/network/interfaces.d" >> /etc/network/interfaces
-    mkdir -p /etc/network/interfaces.d
-  fi
-fi
-
 cat << "EOF" | tee /etc/network/interfaces.d/eth > /dev/null
-auto eth0
-    iface eth0 inet dhcp
-
 auto eth1
     iface eth1 inet static
     address 192.168.143.1
     netmask 255.255.255.0
-    network 192.168.143.0
-
-auto eth2
-    iface eth2 inet static
-    address 192.168.143.2
-    netmask 255.255.255.0
-    network 192.168.143.0
 EOF
 
-echo "INTERFACES=\"eth1 eth2\"" > /etc/default/isc-dhcp-server
+echo "INTERFACES=\"eth1\"" > /etc/default/isc-dhcp-server
 
 cat << "EOF" | tee /etc/dhcp/dhcpd.conf > /dev/null
 ddns-update-style none;
@@ -119,7 +103,8 @@ subnet 192.168.143.0 netmask 255.255.255.0 {range 192.168.143.10 192.168.143.200
 include "/etc/dhcpd.name-servers.tmp";
 EOF
 
-cat << "EOF" | tee /etc/dhcpcd.enter-hook > /dev/null
+
+cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
 #!/bin/bash
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
@@ -138,19 +123,27 @@ if [ -z "$ns" ];then
 else
  my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
 fi
-echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.tmp
-/etc/init.d/isc-dhcp-server force-reload
-EOF
+echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.new
 
-cp /etc/dhcpcd.enter-hook /etc/dhcpcd.exit-hook
-chmod +x /etc/dhcpcd.enter-hook
-chmod +x /etc/dhcpcd.exit-hook
+if [ -f /etc/dhcpd.name-servers.tmp ];then
+  diff /etc/dhcpd.name-servers.tmp /etc/dhcpd.name-servers.new > /dev/null 2>&1
+  if [ $? -eq 0 ];then
+    exit 0
+  fi
+fi  
+cp /etc/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
+/etc/init.d/isc-dhcp-server stop
+/etc/init.d/isc-dhcp-server start
+EOF
+chmod +x /usr/bin/bismark-setdns
+echo "* * * * * root /usr/bin/bismark-setdns" > /etc/cron.d/cron-bismark-setdns
+chmod +x /etc/cron.d/cron-bismark-setdns
+/etc/init.d/cron reload
 
 systemctl disable avahi-daemon
 
 sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 192.168.143.1/" /etc/ssh/sshd_config
 sed -i "s/PermitRootLogin without-password/PermitRootLogin no/" /etc/ssh/sshd_config
-sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
 /etc/init.d/ssh restart
 
-echo "Please reboot your device."
+echo "Please reboot device."
