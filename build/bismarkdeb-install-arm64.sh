@@ -132,13 +132,9 @@ do
   ns2=$ns2$i", "
 done
 if [ -z "$ns" ];then
-  if [ -z "$new_domain_name_servers" ];then
-    my_domain_name_servers="8.8.8.8, 4.2.2.2"
-  else
-    my_domain_name_servers=$(echo $new_domain_name_servers | sed -e 's/ /, /g')
-  fi
+  my_domain_name_servers="8.8.8.8, 4.2.2.2"
 else
- my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
+  my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
 fi
 echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.new
 
