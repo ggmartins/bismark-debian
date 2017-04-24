@@ -52,6 +52,7 @@ cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
 sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hosts
 sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hostname
 rm $0
+/sbin/reboot
 EOF
 
 chmod +x /etc/init.d/bismark-firstboot
@@ -143,7 +144,7 @@ if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
         /etc/init.d/isc-dhcp-server restart
         echo "dhcp restart" > /tmp/dhcpd.state.bad
         # restart ta?
-        [ -f /ta/wrapper.sh ] || /ta/wrapper.sh -k
+        [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
 else
         echo "dhcp good" > /tmp/dhcpd.state.good
 fi
