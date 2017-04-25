@@ -119,10 +119,6 @@ EOF
 cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
 #!/usr/bin/env bash
 
-dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
-dhcpd_stat_code=$?
-dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed"`
-
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
@@ -138,19 +134,20 @@ else
 fi
 echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.new
 
-if [ -f /etc/dhcpd.name-servers.tmp ];then
-  diff /etc/dhcpd.name-servers.tmp /etc/dhcpd.name-servers.new > /dev/null 2>&1
-  if [[ $? -gt 0 ]]; then
-	cp /etc/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
-        /etc/init.d/isc-dhcp-server restart
-        echo "dhcp restart dns" > /tmp/dhcpd.state.bad
-  fi
-fi  
+diff /etc/dhcpd.name-servers.tmp /etc/dhcpd.name-servers.new > /dev/null 2>&1
+if [[ $? -gt 0 ]]; then
+      cp /etc/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
+      /etc/init.d/isc-dhcp-server restart
+      echo "dhcp restart dns" > /tmp/dhcpd.state.bad
+fi
+
+dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
+dhcpd_stat_code=$?
+dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed"`
 
 if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
         /etc/init.d/isc-dhcp-server restart
         echo "dhcp restart" > /tmp/dhcpd.state.bad
-        # restart ta?
         [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
 else
         echo "dhcp good" > /tmp/dhcpd.state.good
