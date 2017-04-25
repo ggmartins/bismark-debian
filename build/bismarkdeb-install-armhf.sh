@@ -133,14 +133,6 @@ else
         echo "dhcp good" > /tmp/dhcpd.state.good
 fi
 
-ps -auxww  > /tmp/ps.out
-if ! grep -q "[d]hcpd" /tmp/ps.out ; then
-  echo "WARNING: dhcpd not running"
-  /etc/init.d/isc-dhcp-server start
-else
-  echo "OK isc-dhcp-server up"
-fi
-
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
@@ -150,11 +142,7 @@ do
   ns2=$ns2$i", "
 done
 if [ -z "$ns" ];then
-  if [ -z "$new_domain_name_servers" ];then
-    my_domain_name_servers="8.8.8.8, 4.2.2.2"
-  else
-    my_domain_name_servers=$(echo $new_domain_name_servers | sed -e 's/ /, /g')
-  fi
+  my_domain_name_servers="8.8.8.8, 4.2.2.2"
 else
  my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
 fi

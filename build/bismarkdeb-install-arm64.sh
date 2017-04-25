@@ -149,14 +149,6 @@ else
         echo "dhcp good" > /tmp/dhcpd.state.good
 fi
 
-ps -auxww  > /tmp/ps.out
-if ! grep -q "[d]hcpd" /tmp/ps.out ; then
-  echo "WARNING: dhcpd not running"
-  /etc/init.d/isc-dhcp-server start
-else
-  echo "OK isc-dhcp-server up"
-fi
-
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
