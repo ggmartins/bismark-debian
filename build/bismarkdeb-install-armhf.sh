@@ -24,6 +24,8 @@ apt-get -yqf install tcpdump
 apt-get -yqf install tshark 
 #apt-get -yqf install dropbear
 
+apt-get remove --purge -y network-manager
+
 #while true; do
 #    read -p "Do you wish to apply the BISmark package configuration for isc-dhcp-server and dhcpcd ? [y/n] " yn
 #    case $yn in
@@ -75,10 +77,7 @@ case "$1" in
     modprobe iptable_nat
     iptables -t nat -A POSTROUTING -o $IFOUT -j MASQUERADE
     echo 1 > /proc/sys/net/ipv4/ip_forward
-    echo "option domain-name-servers 8.8.8.8, 4.2.2.2;" > /etc/dhcpd.name-servers.tmp
-    /etc/init.d/isc-dhcp-server stop
-    sleep 1
-    /etc/init.d/isc-dhcp-server start
+    /usr/bin/bismark-setdns
     echo "Done."
     ;;
   stop)
@@ -120,19 +119,6 @@ EOF
 cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
 #!/usr/bin/env bash
 
-dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
-dhcpd_stat_code=$?
-dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed on eth1"`
-
-if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
-        /etc/init.d/isc-dhcp-server restart
-        echo "dhcp restart" > /tmp/dhcpd.state.bad
-        # restart ta?
-        [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
-else
-        echo "dhcp good" > /tmp/dhcpd.state.good
-fi
-
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
@@ -146,17 +132,26 @@ if [ -z "$ns" ];then
 else
  my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
 fi
-echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.new
+echo "option domain-name-servers $my_domain_name_servers ;">/tmp/dhcpd.name-servers.new
 
-if [ -f /etc/dhcpd.name-servers.tmp ];then
-  diff /etc/dhcpd.name-servers.tmp /etc/dhcpd.name-servers.new > /dev/null 2>&1
-  if [ $? -eq 0 ];then
-    exit 0
-  fi
-fi  
-cp /etc/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
-/etc/init.d/isc-dhcp-server stop
-/etc/init.d/isc-dhcp-server start
+diff /etc/dhcpd.name-servers.tmp /tmp/dhcpd.name-servers.new > /dev/null 2>&1
+if [[ $? -gt 0 ]]; then
+      cp /tmp/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
+      /etc/init.d/isc-dhcp-server restart
+      echo "dhcp restart dns" > /tmp/dhcpd.state.bad
+fi
+
+dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
+dhcpd_stat_code=$?
+dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed"`
+if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
+        /etc/init.d/isc-dhcp-server restart
+        echo "dhcp restart" > /tmp/dhcpd.state.bad
+        [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
+else
+        echo "dhcp good" > /tmp/dhcpd.state.good
+fi
+
 EOF
 chmod +x /usr/bin/bismark-setdns
 echo "* * * * * root /usr/bin/bismark-setdns" > /etc/cron.d/cron-bismark-setdns
@@ -170,6 +165,5 @@ sed -i "s/PermitRootLogin without-password/PermitRootLogin no/" /etc/ssh/sshd_co
 /etc/init.d/ssh restart
 
 rm -f /etc/udev/rules.d/70-persistent-net.rules
-apt-get remove --purge -y network-manager
 
 echo "Please reboot device."
