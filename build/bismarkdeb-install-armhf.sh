@@ -44,6 +44,18 @@ dpkg -i bismark-active_1.0-1_armhf.deb
 dpkg -i bismark-netperf_2.4.4-1_armhf.deb
 dpkg -i bismark-shaperprobe_2009.10_armhf.deb
 
+cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
+#!/bin/sh
+sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hosts
+sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hostname
+rm $0
+/sbin/reboot
+EOF
+
+chmod +x /etc/init.d/bismark-firstboot
+update-rc.d bismark-firstboot defaults
+
+
 cat << "EOF" | tee /etc/init.d/bismark-nat > /dev/null
 #!/bin/sh
 ### BEGIN INIT INFO
@@ -86,6 +98,7 @@ chmod +x /etc/init.d/bismark-nat
 update-rc.d bismark-nat defaults
 
 cat << "EOF" | tee /etc/network/interfaces.d/eth > /dev/null
+allow-hotplug eth1
 auto eth1
     iface eth1 inet static
     address 192.168.143.1
@@ -105,7 +118,29 @@ EOF
 
 
 cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
-#!/bin/bash
+#!/usr/bin/env bash
+
+dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
+dhcpd_stat_code=$?
+dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed on eth1"`
+
+if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
+        /etc/init.d/isc-dhcp-server restart
+        echo "dhcp restart" > /tmp/dhcpd.state.bad
+        # restart ta?
+        [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
+else
+        echo "dhcp good" > /tmp/dhcpd.state.good
+fi
+
+ps -auxww  > /tmp/ps.out
+if ! grep -q "[d]hcpd" /tmp/ps.out ; then
+  echo "WARNING: dhcpd not running"
+  /etc/init.d/isc-dhcp-server start
+else
+  echo "OK isc-dhcp-server up"
+fi
+
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
@@ -145,5 +180,8 @@ systemctl disable avahi-daemon
 sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 192.168.143.1/" /etc/ssh/sshd_config
 sed -i "s/PermitRootLogin without-password/PermitRootLogin no/" /etc/ssh/sshd_config
 /etc/init.d/ssh restart
+
+rm -f /etc/udev/rules.d/70-persistent-net.rules
+apt-get remove --purge -y network-manager
 
 echo "Please reboot device."
