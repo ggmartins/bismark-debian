@@ -48,6 +48,16 @@ dpkg -i bismark-shaperprobe_2009.10_armhf.deb
 
 cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
 #!/bin/sh
+### BEGIN INIT INFO
+# Provides:          bismark-firstboot
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: bismark-nat
+# Description:       initial bismark commands
+### END INIT INFO
+/usr/bin/bismark-bootstrap
 sed -i "s/raspberrypi/$(cat \/etc\/bismark\/ID)/g" /etc/hosts
 sed -i "s/raspberrypi/$(cat \/etc\/bismark\/ID)/g" /etc/hostname
 rm $0
