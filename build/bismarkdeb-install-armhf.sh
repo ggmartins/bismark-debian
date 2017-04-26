@@ -48,8 +48,8 @@ dpkg -i bismark-shaperprobe_2009.10_armhf.deb
 
 cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
 #!/bin/sh
-sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hosts
-sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hostname
+sed -i "s/raspberrypi/$(cat \/etc\/bismark\/ID)/g" /etc/hosts
+sed -i "s/raspberrypi/$(cat \/etc\/bismark\/ID)/g" /etc/hostname
 rm $0
 /sbin/reboot
 EOF
