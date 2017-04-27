@@ -49,6 +49,17 @@ dpkg -i bismark-shaperprobe_2009.10_arm64.deb
 
 cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
 #!/bin/sh
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          bismark-firstboot
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: bismark-nat
+# Description:       initial bismark commands
+### END INIT INFO
+/usr/bin/bismark-bootstrap
 sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hosts
 sed -i "s/odroidc2/$(cat \/etc\/bismark\/ID)/g" /etc/hostname
 rm $0
@@ -136,19 +147,6 @@ EOF
 cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
 #!/usr/bin/env bash
 
-dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
-dhcpd_stat_code=$?
-dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed on eth1"`
-
-if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
-        /etc/init.d/isc-dhcp-server restart
-        echo "dhcp restart" > /tmp/dhcpd.state.bad
-        # restart ta?
-        [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
-else
-        echo "dhcp good" > /tmp/dhcpd.state.good
-fi
-
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
@@ -160,19 +158,27 @@ done
 if [ -z "$ns" ];then
   my_domain_name_servers="8.8.8.8, 4.2.2.2"
 else
-  my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
+ my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
 fi
-echo "option domain-name-servers $my_domain_name_servers ;">/etc/dhcpd.name-servers.new
+echo "option domain-name-servers $my_domain_name_servers ;">/tmp/dhcpd.name-servers.new
 
-if [ -f /etc/dhcpd.name-servers.tmp ];then
-  diff /etc/dhcpd.name-servers.tmp /etc/dhcpd.name-servers.new > /dev/null 2>&1
-  if [ $? -eq 0 ];then
-    exit 0
-  fi
-fi  
-cp /etc/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
-/etc/init.d/isc-dhcp-server stop
-/etc/init.d/isc-dhcp-server start
+diff /etc/dhcpd.name-servers.tmp /tmp/dhcpd.name-servers.new > /dev/null 2>&1
+if [[ $? -gt 0 ]]; then
+      cp /tmp/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
+      /etc/init.d/isc-dhcp-server restart
+      echo "dhcp restart dns" > /tmp/dhcpd.state.bad
+fi
+
+dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
+dhcpd_stat_code=$?
+dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed"`
+if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
+        /etc/init.d/isc-dhcp-server restart
+        echo "dhcp restart" > /tmp/dhcpd.state.bad
+        [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
+else
+        echo "dhcp good" > /tmp/dhcpd.state.good
+fi
 EOF
 chmod +x /usr/bin/bismark-setdns
 echo "* * * * * root /usr/bin/bismark-setdns" > /etc/cron.d/cron-bismark-setdns
