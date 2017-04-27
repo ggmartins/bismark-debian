@@ -88,10 +88,7 @@ case "$1" in
     modprobe iptable_nat
     iptables -t nat -A POSTROUTING -o $IFOUT -j MASQUERADE
     echo 1 > /proc/sys/net/ipv4/ip_forward
-    echo "option domain-name-servers 8.8.8.8, 4.2.2.2;" > /etc/dhcpd.name-servers.tmp 
-    /etc/init.d/isc-dhcp-server stop
-    sleep 1
-    /etc/init.d/isc-dhcp-server start
+    /usr/bin/bismark-setdns
     echo "Done."
     ;;
   stop)
