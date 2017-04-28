@@ -24,6 +24,8 @@ apt-get -yqf install tcpdump
 apt-get -yqf install tshark 
 #apt-get -yqf install dropbear
 
+apt-get remove --purge -y network-manager
+
 #while true; do
 #    read -p "Do you wish to apply the BISmark package configuration for isc-dhcp-server and dhcpcd ? [y/n] " yn
 #    case $yn in
@@ -36,7 +38,7 @@ apt-get -yqf install tshark
 #    esac
 #done
 
-#trick script to think this is a rpi 
+#trick script to think this is a rpi; certain packages need this.
 sed -i "s/^Debian/Raspbian/" /etc/issue
 
 dpkg -i bismark-netcat-gnu_0.7.1-1_arm64.deb
@@ -48,7 +50,6 @@ dpkg -i bismark-netperf_2.4.4-1_arm64.deb
 dpkg -i bismark-shaperprobe_2009.10_arm64.deb
 
 cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
-#!/bin/sh
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          bismark-firstboot
@@ -107,6 +108,7 @@ EOF
 chmod +x /etc/init.d/bismark-nat
 update-rc.d bismark-nat defaults
 
+# For armbian, interfaces.d dir might not be present
 if [ -f /etc/network/interfaces ];then
   if grep -q "source-directory /etc/network/interfaces.d" /etc/network/interfaces 2>%1 /dev/null; then
     echo "source-directory present at /etc/network/interfaces. "
@@ -118,6 +120,7 @@ if [ -f /etc/network/interfaces ];then
 fi
 
 cat << "EOF" | tee /etc/network/interfaces.d/eth > /dev/null
+# For armbian, eth0 might not be configured
 auto eth0
     iface eth0 inet dhcp
 
@@ -129,7 +132,6 @@ auto eth1
     network 192.168.143.0
 EOF
 
-#echo "INTERFACES=\"eth1 eth2\"" > /etc/default/isc-dhcp-server
 echo "INTERFACES=\"eth1\"" > /etc/default/isc-dhcp-server
 
 cat << "EOF" | tee /etc/dhcp/dhcpd.conf > /dev/null
@@ -190,6 +192,5 @@ sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
 /etc/init.d/ssh restart
 
 rm -f /etc/udev/rules.d/70-persistent-net.rules
-apt-get remove --purge -y network-manager
 
-echo "Please reboot your device."
+echo "Please reboot device."

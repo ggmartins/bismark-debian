@@ -67,7 +67,6 @@ EOF
 chmod +x /etc/init.d/bismark-firstboot
 update-rc.d bismark-firstboot defaults
 
-
 cat << "EOF" | tee /etc/init.d/bismark-nat > /dev/null
 #!/bin/sh
 ### BEGIN INIT INFO
@@ -112,6 +111,7 @@ auto eth1
     iface eth1 inet static
     address 192.168.143.1
     netmask 255.255.255.0
+    network 192.168.143.0
 EOF
 
 echo "INTERFACES=\"eth1\"" > /etc/default/isc-dhcp-server
@@ -124,7 +124,6 @@ log-facility local7;
 subnet 192.168.143.0 netmask 255.255.255.0 {range 192.168.143.10 192.168.143.200; option routers 192.168.143.1;}
 include "/etc/dhcpd.name-servers.tmp";
 EOF
-
 
 cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
 #!/usr/bin/env bash
@@ -161,7 +160,6 @@ if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
 else
         echo "dhcp good" > /tmp/dhcpd.state.good
 fi
-
 EOF
 chmod +x /usr/bin/bismark-setdns
 echo "* * * * * root /usr/bin/bismark-setdns" > /etc/cron.d/cron-bismark-setdns
@@ -172,6 +170,7 @@ systemctl disable avahi-daemon
 
 sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 192.168.143.1/" /etc/ssh/sshd_config
 sed -i "s/PermitRootLogin without-password/PermitRootLogin no/" /etc/ssh/sshd_config
+sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
 /etc/init.d/ssh restart
 
 rm -f /etc/udev/rules.d/70-persistent-net.rules
