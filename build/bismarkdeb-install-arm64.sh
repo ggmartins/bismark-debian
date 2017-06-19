@@ -152,7 +152,9 @@ fi
 ns2=""
 for i in $ns; 
 do 
-  ns2=$ns2$i", "
+  if [[ $i =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    ns2=$ns2$i", "
+  fi
 done
 if [ -z "$ns" ];then
   my_domain_name_servers="8.8.8.8, 4.2.2.2"
