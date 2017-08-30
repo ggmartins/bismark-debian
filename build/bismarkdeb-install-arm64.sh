@@ -120,7 +120,7 @@ update-rc.d bismark-nat defaults
 
 # For armbian, interfaces.d dir might not be present
 if [ -f /etc/network/interfaces ];then
-  if grep -q "source-directory /etc/network/interfaces.d" /etc/network/interfaces 2>%1 /dev/null; then
+  if grep -q "source-directory /etc/network/interfaces.d" /etc/network/interfaces 2>&1 /dev/null; then
     echo "source-directory present at /etc/network/interfaces. "
   else
     echo "source-directory not present at /etc/network/interfaces, creating..."
