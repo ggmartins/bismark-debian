@@ -50,7 +50,7 @@ dpkg -i bismark-netperf_2.4.4-1_arm64.deb
 dpkg -i bismark-shaperprobe_2009.10_arm64.deb
 
 cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
-#!/bin/sh
+#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          bismark-firstboot
 # Required-Start:    $local_fs $network
@@ -69,7 +69,7 @@ if [ -f /etc/salt/minion_id ];then
   if (($D < 1000)); then
     let "D = (D+1000)"
   fi
-  echo test_$D > /etc/salt/minion_id
+  echo "test_{$D}" > /etc/salt/minion_id
   rm $0
   /sbin/reboot
 else
@@ -210,7 +210,8 @@ sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
 
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 
-curl -o bootstrap-salt.sh -L https://bootstrap.saltstack.com
+#curl -o bootstrap-salt.sh -L https://bootstrap.saltstack.com
+curl -o bootstrap-salt.sh -L http://downloads.projectbismark.net/rpi/bootstrap-salt.sh
 sh bootstrap-salt.sh -r -P git v2016.11.1
 
 if [ ! -d /etc/salt/minion.d/ ]; then
