@@ -69,7 +69,7 @@ if [ -f /etc/salt/minion_id ];then
   if (($D < 1000)); then
     let "D = (D+1000)"
   fi
-  echo "test_{$D}" > /etc/salt/minion_id
+  echo "test_${D}" > /etc/salt/minion_id
   rm $0
   /sbin/reboot
 else
