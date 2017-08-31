@@ -47,7 +47,7 @@ dpkg -i bismark-netperf_2.4.4-1_armhf.deb
 dpkg -i bismark-shaperprobe_2009.10_armhf.deb
 
 cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
-#!/bin/sh
+#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          bismark-firstboot
 # Required-Start:    $local_fs $network
@@ -60,8 +60,18 @@ cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
 /usr/bin/bismark-bootstrap
 sed -i "s/raspberrypi/$(cat \/etc\/bismark\/ID)/g" /etc/hosts
 sed -i "s/raspberrypi/$(cat \/etc\/bismark\/ID)/g" /etc/hostname
-rm $0
-/sbin/reboot
+
+if [ -f /etc/salt/minion_id ];then
+  let "D=$RANDOM % 9999"
+  if (($D < 1000)); then
+    let "D = (D+1000)"
+  fi
+  echo "test_${D}" > /etc/salt/minion_id
+  rm $0
+  /sbin/reboot
+else
+  echo "WARNING: MINION ID (/etc/salt/minion_id) NOT FOUND"
+fi
 EOF
 
 chmod +x /etc/init.d/bismark-firstboot
@@ -128,6 +138,11 @@ EOF
 cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
 #!/usr/bin/env bash
 
+if ! ifconfig -a | grep -q eth1;
+then
+  exit
+fi
+
 if [ -f /etc/resolv.conf ];then
   ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
 fi
@@ -176,5 +191,22 @@ sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
 /etc/init.d/ssh restart
 
 rm -f /etc/udev/rules.d/70-persistent-net.rules
+
+#curl -o bootstrap-salt.sh -L https://bootstrap.saltstack.com
+curl -o bootstrap-salt.sh -L http://downloads.projectbismark.net/rpi/bootstrap-salt.sh
+sh bootstrap-salt.sh -r -P git v2016.11.1
+
+if [ ! -d /etc/salt/minion.d/ ]; then
+  echo "WARNING: Error installing salt stack"
+  exit
+else
+  sed -i "s/#default_include: minion.d\/\*\.conf/default_include: minion.d\/\*\.conf/" /etc/salt/minion
+fi
+
+cat << "EOF" | tee /etc/salt/minion.d/test1.conf > /dev/null
+master:
+  - trafficanalysis.princeton.edu
+master_port: 44506
+EOF
 
 echo "Please reboot device."
