@@ -193,8 +193,10 @@ sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
 rm -f /etc/udev/rules.d/70-persistent-net.rules
 
 #curl -o bootstrap-salt.sh -L https://bootstrap.saltstack.com
-curl -o bootstrap-salt.sh -L http://downloads.projectbismark.net/rpi/bootstrap-salt.sh
-sh bootstrap-salt.sh -r -P git v2016.11.1
+#curl -o bootstrap-salt.sh -L http://downloads.projectbismark.net/rpi/bootstrap-salt.sh
+#sh bootstrap-salt.sh -r -P git v2016.11.1
+curl -o bootstrap-salt.sh https://raw.githubusercontent.com/saltstack/salt-bootstrap/develop/bootstrap-salt.sh
+sh bootstrap-salt.sh -r -P git 2017.7
 
 if [ ! -d /etc/salt/minion.d/ ]; then
   echo "WARNING: Error installing salt stack"
