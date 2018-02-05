@@ -142,6 +142,8 @@ cache-size=0
 log-dhcp
 EOF
 
+echo "conf-dir=/etc/dnsmasq.d/" > /etc/dnsmasq.conf
+
 /etc/init.d/cron reload
 
 systemctl disable avahi-daemon
