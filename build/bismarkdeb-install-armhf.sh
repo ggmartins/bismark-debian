@@ -2,13 +2,13 @@
 
 apt-get update
 
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-active_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-data-transmit_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-management-client_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-netcat-gnu_0.7.1-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-dropbear_2011.54-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-shaperprobe_2009.10_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/bismark-netperf_2.4.4-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-active_1.0-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-data-transmit_1.0-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-management-client_1.0-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-netcat-gnu_0.7.1-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-dropbear_2011.54-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-shaperprobe_2009.10_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-netperf_2.4.4-1_armhf.deb
 apt-get -yqf install vim
 apt-get -yqf install time
 apt-get -yqf install fping
@@ -19,6 +19,7 @@ apt-get -yqf install d-itg
 apt-get -yqf install curl
 apt-get -yqf install libcurl3-gnutls
 #apt-get -yqf install isc-dhcp-server 
+apt-get -yqf install libssl1.0.0
 apt-get -yqf install dnsmasq
 apt-get -yqf install iftop
 apt-get -yqf install tcpdump
