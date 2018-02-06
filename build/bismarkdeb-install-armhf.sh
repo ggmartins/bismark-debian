@@ -2,13 +2,13 @@
 
 apt-get update
 
-#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-active_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-data-transmit_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-management-client_1.0-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-netcat-gnu_0.7.1-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-dropbear_2011.54-1_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-shaperprobe_2009.10_armhf.deb
-#wget -c http://downloads.projectbismark.net/debian/armhf/stretch_new/bismark-netperf_2.4.4-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch/bismark-active_1.0-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch/bismark-data-transmit_1.0-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch/bismark-management-client_1.0-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch/bismark-netcat-gnu_0.7.1-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch/bismark-dropbear_2011.54-1_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch/bismark-shaperprobe_2009.10_armhf.deb
+#wget -c http://downloads.projectbismark.net/debian/armhf/stretch/bismark-netperf_2.4.4-1_armhf.deb
 apt-get -yqf install vim
 apt-get -yqf install time
 apt-get -yqf install fping
@@ -19,7 +19,6 @@ apt-get -yqf install d-itg
 apt-get -yqf install curl
 apt-get -yqf install libcurl3-gnutls
 #apt-get -yqf install isc-dhcp-server 
-apt-get -yqf install libssl1.0.0
 apt-get -yqf install dnsmasq
 apt-get -yqf install iftop
 apt-get -yqf install tcpdump
@@ -163,11 +162,10 @@ curl -o bootstrap-salt.sh https://raw.githubusercontent.com/saltstack/salt-boots
 sh bootstrap-salt.sh -r -P git 2017.7
 
 if [ ! -d /etc/salt/minion.d/ ]; then
-  echo "WARNING: Error installing salt stack"
-  exit
-else
-  sed -i "s/#default_include: minion.d\/\*\.conf/default_include: minion.d\/\*\.conf/" /etc/salt/minion
+  mkdir -p /etc/salt/minion.d/
 fi
+
+sed -i "s/#default_include: minion.d\/\*\.conf/default_include: minion.d\/\*\.conf/" /etc/salt/minion
 
 cat << "EOF" | tee /etc/salt/minion.d/test1.conf > /dev/null
 master:
