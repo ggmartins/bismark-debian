@@ -55,7 +55,7 @@ cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
 # Required-Stop:     $local_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: bismark-nat
+# Short-Description: bismark-firstboot
 # Description:       initial bismark commands
 ### END INIT INFO
 /usr/bin/bismark-bootstrap

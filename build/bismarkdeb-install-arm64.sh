@@ -18,7 +18,8 @@ apt-get -yqf install paris-traceroute
 apt-get -yqf install d-itg
 apt-get -yqf install curl
 apt-get -yqf install libcurl3-gnutls
-apt-get -yqf install isc-dhcp-server 
+apt-get -yqf install dnsmasq
+#apt-get -yqf install isc-dhcp-server 
 apt-get -yqf install iftop
 apt-get -yqf install tcpdump
 apt-get -yqf install tshark 
@@ -57,7 +58,7 @@ cat << "EOF" | tee /etc/init.d/bismark-firstboot > /dev/null
 # Required-Stop:     $local_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: bismark-nat
+# Short-Description: bismark-firstboot
 # Description:       initial bismark commands
 ### END INIT INFO
 /usr/bin/bismark-bootstrap
@@ -142,63 +143,26 @@ auto eth1
     network 192.168.143.0
 EOF
 
-echo "INTERFACES=\"eth1\"" > /etc/default/isc-dhcp-server
-
-cat << "EOF" | tee /etc/dhcp/dhcpd.conf > /dev/null
-ddns-update-style none;
-default-lease-time 600;
-max-lease-time 7200;
-log-facility local7;
-subnet 192.168.143.0 netmask 255.255.255.0 {range 192.168.143.10 192.168.143.200; option routers 192.168.143.1;}
-include "/etc/dhcpd.name-servers.tmp";
+cat << "EOF" | tee /etc/dnsmasq.d/dnsmasq-bismark.conf > /dev/null
+bogus-priv
+interface=eth1
+except-interface=eth0
+listen-address=192.168.143.1
+dhcp-range=192.168.143.10,192.168.143.250,255.255.255.0,24h
+dhcp-option=option:router,192.168.143.1
+log-facility=/var/log/dnsmasq.log
+dhcp-leasefile=/tmp/dhcp.leases
+stop-dns-rebind
+domain-needed
+bind-interfaces
+dhcp-authoritative
+cache-size=0
+log-dhcp
 EOF
 
-cat << "EOF" | tee /usr/bin/bismark-setdns > /dev/null
-#!/usr/bin/env bash
+echo "conf-dir=/etc/dnsmasq.d/" > /etc/dnsmasq.conf
 
-if ! ifconfig -a | grep -q eth1;
-then
-  exit
-fi
 
-if [ -f /etc/resolv.conf ];then
-  ns=$(cat /etc/resolv.conf  | grep -v "^#" | grep nameserver | awk '{print $2}')
-fi
-ns2=""
-for i in $ns; 
-do 
-  if [[ $i =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-    ns2=$ns2$i", "
-  fi
-done
-if [ -z "$ns" ];then
-  my_domain_name_servers="8.8.8.8, 4.2.2.2"
-else
- my_domain_name_servers=$(echo $ns2 | sed "s/,$//") 
-fi
-echo "option domain-name-servers $my_domain_name_servers ;">/tmp/dhcpd.name-servers.new
-
-diff /etc/dhcpd.name-servers.tmp /tmp/dhcpd.name-servers.new > /dev/null 2>&1
-if [[ $? -gt 0 ]]; then
-      cp /tmp/dhcpd.name-servers.new /etc/dhcpd.name-servers.tmp
-      /etc/init.d/isc-dhcp-server restart
-      echo "dhcp restart dns" > /tmp/dhcpd.state.bad
-fi
-
-dhcpd_stat=`/etc/init.d/isc-dhcp-server status`
-dhcpd_stat_code=$?
-dhcp_stat_iface=`echo $dhcpd_stat | grep -c "receive_packet failed"`
-if [[ $dhcpd_stat_code -gt 0 || $dhcp_stat_iface -gt 0 ]]; then
-        /etc/init.d/isc-dhcp-server restart
-        echo "dhcp restart" > /tmp/dhcpd.state.bad
-        [ -f /ta/wrapper.sh ] && /ta/wrapper.sh -k
-else
-        echo "dhcp good" > /tmp/dhcpd.state.good
-fi
-EOF
-chmod +x /usr/bin/bismark-setdns
-echo "* * * * * root /usr/bin/bismark-setdns" > /etc/cron.d/cron-bismark-setdns
-chmod +x /etc/cron.d/cron-bismark-setdns
 /etc/init.d/cron reload
 
 systemctl disable avahi-daemon
