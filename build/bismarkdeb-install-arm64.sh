@@ -19,6 +19,7 @@ apt-get -yqf install d-itg
 apt-get -yqf install curl
 apt-get -yqf install libcurl3-gnutls
 apt-get -yqf install dnsmasq
+apt-get -yqf install ntpdate
 #apt-get -yqf install isc-dhcp-server 
 apt-get -yqf install iftop
 apt-get -yqf install tcpdump
